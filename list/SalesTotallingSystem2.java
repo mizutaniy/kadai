@@ -1,12 +1,18 @@
 package sample;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class SalesTotallingSystem2 {
@@ -18,6 +24,8 @@ public class SalesTotallingSystem2 {
 		
 		ArrayList<String> readList = new ArrayList<String>();
 		ArrayList<String> salesFile = new ArrayList<String>();
+		int branchTotal = 0;
+		int commodityTotal = 0;
 
 		try{	//支店定義読み込み
 			File file = new File(args[0],"branch.lst");
@@ -101,30 +109,30 @@ public class SalesTotallingSystem2 {
 				File readFile = new File(args[0], readList.get(j));
 				FileReader fr = new FileReader(readFile);
 				BufferedReader br = new BufferedReader(fr);
-				String date;
-				String[] readSales = new String[5];
-				int s = 0;
-				while((date = br.readLine()) != null){
-					readSales[s]  = date;
-					s++;
+				String s;
+				while((s = br.readLine()) != null){
+					salesFile.add(s);
 				}
-				
-				if(readSales.length >= 4){
+				if(salesFile.size() >= 4){
 					System.out.println(readList.get(j) + "のフォーマットが不正です");
 					br.close();
 					return;
 				}
 				
-				if(readSales[2].length() >= 10){
+				if(salesFile.get(2).length() >= 10){
 					System.out.println("合計金額が10桁を超えました");
 					br.close();
 					return;
 				}
 				
-				
-				if(branchSalesDate.containsKey(readSales[0]) == true){
-					int branchTotal = branchSalesDate.get(readSales[0]);
-					branchTotal += Integer.parseInt(readSales[2]);
+				if(branchDate.containsKey(salesFile.get(0)) == true){
+					if(branchSalesDate.get(salesFile.get(0)) != null){
+						branchTotal = branchSalesDate.get(salesFile.get(0));
+					} else {
+						branchTotal = 0;
+					}
+					
+					branchTotal += Integer.parseInt(salesFile.get(2));
 					
 					int figures = Math.max(branchTotal, 999999999);	//桁確認
 					if(figures > 999999999){
@@ -133,16 +141,22 @@ public class SalesTotallingSystem2 {
 						return;
 					}
 					
-					branchSalesDate.put(readSales[0], branchTotal);
+					branchSalesDate.put(salesFile.get(0), branchTotal);
+				
 				} else {
 					System.out.println(readList.get(j) + "の支店コードが不正です");
 					br.close();
 					return;
 				}
 				
-				if(commoditySalesDate.containsKey(readSales[1]) == true){
-					int commodityTotal = commoditySalesDate.get(readSales[1]);
-					commodityTotal += Integer.parseInt(readSales[2]);
+				if(commodityDate.containsKey(salesFile.get(1)) == true){
+					if(commoditySalesDate.get(salesFile.get(1)) != null){
+						commodityTotal = commoditySalesDate.get(salesFile.get(1));
+					} else {
+						commodityTotal = 0;
+					}
+					
+					commodityTotal += Integer.parseInt(salesFile.get(2));
 					
 					int figures = Math.max(commodityTotal, 999999999);	//桁確認
 					if(figures > 999999999){
@@ -151,19 +165,60 @@ public class SalesTotallingSystem2 {
 						return;
 					}
 					
-					commoditySalesDate.put(readSales[1], commodityTotal);
+					commoditySalesDate.put(salesFile.get(1), commodityTotal);
 				} else {
 					System.out.println(readList.get(j) + "の商品コードが不正です");
 					br.close();
 					return;
+				}
+				while(salesFile.size() != 0){
+					salesFile.remove(0);
 				}
 				br.close();
 			} catch(IOException e) {
 				System.out.println(e);
 			}
 		}
-		Collections.sort(branchSalesDate.get("001"));
-	    Collections.reverse(branchSalesDate.get("001"));
+		
+		List<Map.Entry<String, Integer>> branchSortList = new ArrayList<Map.Entry<String, Integer>>(branchSalesDate.entrySet());
+		Collections.sort(branchSortList, new Comparator <Map.Entry<String, Integer>>(){
+			public int compare(
+					Entry<String, Integer> entry1, Entry<String, Integer> entry2){
+				return ((Integer) entry2.getValue()).compareTo((Integer) entry1.getValue());
+			}
+		});
+		
+		List<Map.Entry<String, Integer>> commoditySortList = new ArrayList<Map.Entry<String, Integer>>(commoditySalesDate.entrySet());
+		Collections.sort(commoditySortList, new Comparator <Map.Entry<String, Integer>>(){
+			public int compare(
+					Entry<String, Integer> entry1, Entry<String, Integer> entry2){
+				return ((Integer) entry2.getValue()).compareTo((Integer) entry1.getValue());
+			}
+		});
+		
+		try{
+			File outFile = new File(args[0],"branch.out");
+			FileWriter fw = new FileWriter(outFile);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			for (Entry<String, Integer> s : branchSortList) {
+				bw.write(s.getKey() + "," + branchDate.get(s.getKey()) + "," + s.getValue() + "\r\n");
+			}
+			bw.close();
+		} catch(IOException e) {
+			System.out.println(e);
+		}
 
+		try{
+			File outFile = new File(args[0],"commodity.out");
+			FileWriter fw = new FileWriter(outFile);
+			BufferedWriter bw = new BufferedWriter(fw);
+			 for (Entry<String, Integer> s : commoditySortList) {
+				 bw.write(s.getKey() + "," + commodityDate.get(s.getKey()) + "," + s.getValue() + "\r\n");
+			 }
+			bw.close();
+		} catch(IOException e) {
+			System.out.println(e);
+		}
 	}
 }
