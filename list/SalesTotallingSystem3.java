@@ -65,11 +65,10 @@ public class SalesTotallingSystem3 {
 		}
 		if(numberList.containsKey(salesFile.get(i)) == true){
 			if(totalList.get(salesFile.get(i)) != null){
-				total = totalList.get(salesFile.get(0));
+				total = totalList.get(salesFile.get(i));
 			} else {
 				total = 0;
 			}
-			
 			total += Integer.parseInt(salesFile.get(2));
 			
 			int figures = Math.max(total, 999999999);	//桁確認
@@ -167,13 +166,6 @@ public class SalesTotallingSystem3 {
 					System.out.println("合計金額が10桁を超えました");
 					System.exit(1);
 				}
-				System.out.println("◎" +branchData);
-				System.out.println("★" +salesFile);
-				System.out.println("□" +branchTotal);
-				System.out.println("▲" +branchSalesData);
-				System.out.println("◎" +commodityData);
-				System.out.println("□" +commodityTotal);
-				System.out.println("▲" +commoditySalesData);
 				branchSalesData = checkSalesList(branchData, salesFile, branchTotal, branchSalesData, readList.get(j), "支店");
 				commoditySalesData = checkSalesList(commodityData, salesFile, commodityTotal, commoditySalesData, readList.get(j), "商品");
 
