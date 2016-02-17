@@ -99,6 +99,7 @@ public class SalesTotallingSystem {
 
 	public static boolean outputData(HashMap<String, Long> outputList,HashMap<String, String> listData,
 			String filePlace, String fileName){
+		String lineS = System.lineSeparator();
 		List<Map.Entry<String, Long>> branchSortList = new ArrayList<Map.Entry<String, Long>>(outputList.entrySet());
 		Collections.sort(branchSortList, new Comparator <Map.Entry<String, Long>>(){
 			public int compare(
@@ -112,7 +113,7 @@ public class SalesTotallingSystem {
 			FileWriter fw = new FileWriter(outFile);
 			bw = new BufferedWriter(fw);
 			for (Entry<String, Long> s : branchSortList) {
-				bw.write(s.getKey() + "," + listData.get(s.getKey()) + "," + s.getValue() + "\n");
+				bw.write(s.getKey() + "," + listData.get(s.getKey()) + "," + s.getValue() + lineS);
 			}
 			bw.close();
 		} catch(IOException e) {
