@@ -17,7 +17,7 @@ import java.util.Map.Entry;
 
 public class SalesTotallingSystem {
 	public static boolean readFile(HashMap<String, String> list, HashMap<String, Long>salesList,
-			String filePlace, String fileName, String outName){
+			String filePlace, String fileName, String outName, int wordCount, String condition){
 		BufferedReader br =null;
 		try{	//定義読み込み
 			File file = new File(filePlace, fileName);
@@ -25,34 +25,15 @@ public class SalesTotallingSystem {
 			br = new BufferedReader(fr);
 			String readData;
 			while((readData = br.readLine()) != null){
-				if(outName == "支店"){
-					if(readData.lastIndexOf(",") != 3){
-						System.out.println(outName + "定義ファイルのフォーマットが不正です");
+				if(readData.lastIndexOf(",") != wordCount){
+				System.out.println(outName + "定義ファイルのフォーマットが不正です");
 						return false;
-					}
-				} else if(outName == "商品"){
-					if(readData.lastIndexOf(",") != 8){
-						System.out.println(outName + "定義ファイルのフォーマットが不正です");
-						return false;
-					}
 				}
 				
 				String[] splitData = readData.split(",");
-				if(splitData.length != 2){
+				if(splitData.length != 2 || !splitData[0].matches(condition)){
 					System.out.println(outName + "定義ファイルのフォーマットが不正です");
 					return false;
-				}
-
-				if(outName == "支店"){
-					if(!splitData[0].matches("^[0-9]{3}$")) {
-						System.out.println("支店定義ファイルのフォーマットが不正です");
-						return false;
-					}
-				} else if(outName == "商品"){
-					if(!splitData[0].matches("^[0-9a-zA-Z]{8}$")) {
-						System.out.println("商品定義ファイルのフォーマットが不正です");
-						return false;
-					}
 				}
 
 				list.put(splitData[0], splitData[1]);
@@ -144,34 +125,26 @@ public class SalesTotallingSystem {
 			System.out.println("コマンドライン引数にディレクトリが指定されていないためファイルを読み込めません");
 			return;
 		}
-		j = readFile(branchData, branchSalesData, args[0], "branch.lst", "支店");
+		j = readFile(branchData, branchSalesData, args[0], "branch.lst", "支店", 3, "^[0-9]{3}$");
 		if(j == false){
 			return;
 		}
-		j = readFile(commodityData, commoditySalesData, args[0], "commodity.lst", "商品");
+		j = readFile(commodityData, commoditySalesData, args[0], "commodity.lst", "商品", 8, "^[0-9a-zA-Z]{8}$");
 		if(j == false){
 			return;
 		}
 
 		File file = new File(args[0]); //売り上げファイルフォーマット確認
-		String[] fileList = file.list();
-		int remainder = 0;
+		File[] fileList = file.listFiles();
 		for(int i = 0; i < fileList.length; i++){
-			String readFile = fileList[i];
-			if(readFile.contains(".rcd") == true){
+			String readFile = fileList[i].getName();
+			if(readFile.matches("^[0-9]{8}.rcd$") && fileList[i].isFile() == true) {
 				String[] check = readFile.split("\\.");
-				if(check[0].length() == 8){
 					int number = Integer.parseInt(check[0]);
-					if(i == 0){
-						remainder = number - i;
-					}
-					if(number - i != remainder){
+					if(number != i + 1){
 						System.out.println("売上ファイル名が連番になっていません");
 						return;
 					}
-				} else {
-					break;
-				}
 			} else {
 				break;
 			}
@@ -179,18 +152,13 @@ public class SalesTotallingSystem {
 			BufferedReader br = null;
 			try{
 				File readData = new File(args[0], readFile);//該当ファイル読み込み
-				if(readData.isFile() == true){
 					FileReader fr = new FileReader(readData);
 					br = new BufferedReader(fr);
 					String s;
 					while((s = br.readLine()) != null){
 						salesFile.add(s);
 					}
-					if(salesFile.size() != 3){
-						System.out.println(readFile + "のフォーマットが不正です");
-						return;
-					}
-					if(!salesFile.get(2).matches("^[0-9]{1,10}$")) {
+					if(salesFile.size() != 3 || !salesFile.get(2).matches("^[0-9]{1,10}$")){
 						System.out.println(readFile + "のフォーマットが不正です");
 						return;
 					}
@@ -206,9 +174,6 @@ public class SalesTotallingSystem {
 					while(salesFile.size() != 0){
 						salesFile.remove(0);
 					}
-				} else{
-					continue;
-				}
 			} catch(IOException e) {
 				System.out.println(e);
 				return;
