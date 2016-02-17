@@ -20,15 +20,23 @@ public class SalesTotallingSystem {
 			String filePlace, String fileName, String outName){
 		BufferedReader br =null;
 		try{	//定義読み込み
-			File file = new File(filePlace,fileName);
+			File file = new File(filePlace, fileName);
 			FileReader fr = new FileReader(file);
 			br = new BufferedReader(fr);
 			String readData;
 			while((readData = br.readLine()) != null){
-				if(readData.contains(",") == false){
-					System.out.println(outName + "定義ファイルのフォーマットが不正です");
-					return false;
+				if(outName == "支店"){
+					if(readData.lastIndexOf(",") != 3){
+						System.out.println(outName + "定義ファイルのフォーマットが不正です");
+						return false;
+					}
+				} else if(outName == "商品"){
+					if(readData.lastIndexOf(",") != 8){
+						System.out.println(outName + "定義ファイルのフォーマットが不正です");
+						return false;
+					}
 				}
+				
 				String[] splitData = readData.split(",");
 				if(splitData.length != 2){
 					System.out.println(outName + "定義ファイルのフォーマットが不正です");
@@ -40,13 +48,13 @@ public class SalesTotallingSystem {
 						System.out.println("支店定義ファイルのフォーマットが不正です");
 						return false;
 					}
-				}
-				if(outName == "商品"){
+				} else if(outName == "商品"){
 					if(!splitData[0].matches("^[0-9a-zA-Z]{8}$")) {
 						System.out.println("商品定義ファイルのフォーマットが不正です");
 						return false;
 					}
 				}
+
 				list.put(splitData[0], splitData[1]);
 				salesList.put(splitData[0], (long)0);
 			}
@@ -104,7 +112,7 @@ public class SalesTotallingSystem {
 			FileWriter fw = new FileWriter(outFile);
 			bw = new BufferedWriter(fw);
 			for (Entry<String, Long> s : branchSortList) {
-				bw.write(s.getKey() + "," + listData.get(s.getKey()) + "," + s.getValue() + "\r\n");
+				bw.write(s.getKey() + "," + listData.get(s.getKey()) + "," + s.getValue() + "\n");
 			}
 			bw.close();
 		} catch(IOException e) {
@@ -146,16 +154,17 @@ public class SalesTotallingSystem {
 
 		File file = new File(args[0]); //売り上げファイルフォーマット確認
 		String[] fileList = file.list();
-		int sales1 = 0;
+		int remainder = 0;
 		for(int i = 0; i < fileList.length; i++){
 			String readFile = fileList[i];
 			if(readFile.contains(".rcd") == true){
 				String[] check = readFile.split("\\.");
 				if(check[0].length() == 8){
-					int sales2 = Integer.parseInt(check[0]);
-					if(sales2 - sales1 == 1 || (sales2 == 00000002 && sales1 == 0)){
-						sales1 = Integer.parseInt(check[0]);
-					} else {
+					int number = Integer.parseInt(check[0]);
+					if(i == 0){
+						remainder = number - i;
+					}
+					if(number - i != remainder){
 						System.out.println("売上ファイル名が連番になっていません");
 						return;
 					}
