@@ -25,17 +25,12 @@ public class SalesTotallingSystem {
 			br = new BufferedReader(fr);
 			String readData;
 			while((readData = br.readLine()) != null){
-				if(readData.lastIndexOf(",") != wordCount){
-				System.out.println(outName + "定義ファイルのフォーマットが不正です");
-						return false;
-				}
-				
-				String[] splitData = readData.split(",");
-				if(splitData.length != 2 || !splitData[0].matches(condition)){
+				if(readData.lastIndexOf(",") != wordCount || !readData.matches(condition)){
 					System.out.println(outName + "定義ファイルのフォーマットが不正です");
 					return false;
 				}
 
+				String[] splitData = readData.split(",");
 				list.put(splitData[0], splitData[1]);
 				salesList.put(splitData[0], (long)0);
 			}
@@ -55,25 +50,25 @@ public class SalesTotallingSystem {
 	}
 
 
-	public static boolean totalSales(HashMap<String, Long> totalSales, ArrayList<String> readSales, 
+	public static boolean totalSales(HashMap<String, Long> totalSales, ArrayList<String> readSales,
 			String readFile, String fileName){
 		int i = 0;
 		if(fileName == "商品"){
 			i = 1;
 		}
-			if(totalSales.containsKey(readSales.get(i)) == true){
-				long total = totalSales.get(readSales.get(i));
-				total += Long.parseLong(readSales.get(2));
+		if(totalSales.containsKey(readSales.get(i)) == true){
+			long total = totalSales.get(readSales.get(i));
+			total += Long.parseLong(readSales.get(2));
 
-				if(String.valueOf(total).length() > 10){
-					System.out.println("合計金額が10桁を超えました");
-					return false;
-				}
-				totalSales.put(readSales.get(i), total);
-			} else {
-				System.out.println(readFile + "の支店コードが不正です");
+			if(String.valueOf(total).length() > 10){
+				System.out.println("合計金額が10桁を超えました");
 				return false;
 			}
+			totalSales.put(readSales.get(i), total);
+		} else {
+			System.out.println(readFile + "の支店コードが不正です");
+			return false;
+		}
 		return true;
 	}
 
@@ -83,8 +78,7 @@ public class SalesTotallingSystem {
 		String lineS = System.lineSeparator();
 		List<Map.Entry<String, Long>> branchSortList = new ArrayList<Map.Entry<String, Long>>(outputList.entrySet());
 		Collections.sort(branchSortList, new Comparator <Map.Entry<String, Long>>(){
-			public int compare(
-				Entry<String, Long> entry1, Entry<String, Long> entry2){
+			public int compare(Entry<String, Long> entry1, Entry<String, Long> entry2){
 				return ((Long) entry2.getValue()).compareTo((Long) entry1.getValue());
 			}
 		});
@@ -119,18 +113,15 @@ public class SalesTotallingSystem {
 		HashMap<String, Long> branchSalesData = new HashMap<String, Long>();
 		HashMap<String, Long> commoditySalesData = new HashMap<String, Long>();
 		ArrayList<String> salesFile = new ArrayList<String>();
-		boolean j;
 
 		if(args.length == 0){
 			System.out.println("コマンドライン引数にディレクトリが指定されていないためファイルを読み込めません");
 			return;
 		}
-		j = readFile(branchData, branchSalesData, args[0], "branch.lst", "支店", 3, "^[0-9]{3}$");
-		if(j == false){
+		if(!readFile(branchData, branchSalesData, args[0], "branch.lst", "支店", 3, "^[0-9]{3},.+$")){
 			return;
 		}
-		j = readFile(commodityData, commoditySalesData, args[0], "commodity.lst", "商品", 8, "^[0-9a-zA-Z]{8}$");
-		if(j == false){
+		if(!readFile(commodityData, commoditySalesData, args[0], "commodity.lst", "商品", 8, "^[0-9a-zA-Z]{8},.+$")){
 			return;
 		}
 
@@ -152,28 +143,26 @@ public class SalesTotallingSystem {
 			BufferedReader br = null;
 			try{
 				File readData = new File(args[0], readFile);//該当ファイル読み込み
-					FileReader fr = new FileReader(readData);
-					br = new BufferedReader(fr);
-					String s;
-					while((s = br.readLine()) != null){
-						salesFile.add(s);
-					}
-					if(salesFile.size() != 3 || !salesFile.get(2).matches("^[0-9]{1,10}$")){
-						System.out.println(readFile + "のフォーマットが不正です");
-						return;
-					}
+				FileReader fr = new FileReader(readData);
+				br = new BufferedReader(fr);
+				String s;
+				while((s = br.readLine()) != null){
+					salesFile.add(s);
+				}
+				if(salesFile.size() != 3 || !salesFile.get(2).matches("^[0-9]{1,10}$")){
+					System.out.println(readFile + "のフォーマットが不正です");
+					return;
+				}
 
-					j = totalSales(branchSalesData, salesFile, readFile, "支店");
-					if(j == false){
-						return;
-					}
-					j = totalSales(commoditySalesData, salesFile, readFile, "商品");
-					if(j == false){
-						return;
-					}
-					while(salesFile.size() != 0){
-						salesFile.remove(0);
-					}
+				if(!totalSales(branchSalesData, salesFile, readFile, "支店")){
+					return;
+				}
+				if(!totalSales(commoditySalesData, salesFile, readFile, "商品")){
+					return;
+				}
+				while(salesFile.size() != 0){
+					salesFile.remove(0);
+				}
 			} catch(IOException e) {
 				System.out.println(e);
 				return;
@@ -188,12 +177,10 @@ public class SalesTotallingSystem {
 			}
 		}
 
-		j = outputData(branchSalesData, branchData, args[0], "branch.out");
-		if(j == false){
+		if(!outputData(branchSalesData, branchData, args[0], "branch.out")){
 			return;
 		}
-		j = outputData(commoditySalesData, commodityData, args[0], "commodity.out");
-		if(j == false){
+		if(!outputData(commoditySalesData, commodityData, args[0], "commodity.out")){
 			return;
 		}
 	}
