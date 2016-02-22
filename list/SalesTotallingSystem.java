@@ -50,17 +50,17 @@ public class SalesTotallingSystem {
 	}
 
 
-	public static boolean totalSales(HashMap<String, Long> totalSales, String readNumberDate,
-			String readSalesDate, String readFile){
-		if(totalSales.containsKey(readNumberDate) == true){
-			long total = totalSales.get(readNumberDate);
-			total += Long.parseLong(readSalesDate);
+	public static boolean totalSales(HashMap<String, Long> totalSales, String readNumberData,
+			String readSalesData, String readFile){
+		if(totalSales.containsKey(readNumberData) == true){
+			long total = totalSales.get(readNumberData);
+			total += Long.parseLong(readSalesData);
 
 			if(String.valueOf(total).length() > 10){
 				System.out.println("合計金額が10桁を超えました");
 				return false;
 			}
-			totalSales.put(readNumberDate, total);
+			totalSales.put(readNumberData, total);
 		} else {
 			System.out.println(readFile + "の支店コードが不正です");
 			return false;
