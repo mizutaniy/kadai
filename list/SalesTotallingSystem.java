@@ -50,21 +50,17 @@ public class SalesTotallingSystem {
 	}
 
 
-	public static boolean totalSales(HashMap<String, Long> totalSales, ArrayList<String> readSales,
-			String readFile, String fileName){
-		int i = 0;
-		if(fileName == "商品"){
-			i = 1;
-		}
-		if(totalSales.containsKey(readSales.get(i)) == true){
-			long total = totalSales.get(readSales.get(i));
-			total += Long.parseLong(readSales.get(2));
+	public static boolean totalSales(HashMap<String, Long> totalSales, String readNumberDate,
+			String readSalesDate, String readFile){
+		if(totalSales.containsKey(readNumberDate) == true){
+			long total = totalSales.get(readNumberDate);
+			total += Long.parseLong(readSalesDate);
 
 			if(String.valueOf(total).length() > 10){
 				System.out.println("合計金額が10桁を超えました");
 				return false;
 			}
-			totalSales.put(readSales.get(i), total);
+			totalSales.put(readNumberDate, total);
 		} else {
 			System.out.println(readFile + "の支店コードが不正です");
 			return false;
@@ -90,7 +86,6 @@ public class SalesTotallingSystem {
 			for (Entry<String, Long> s : branchSortList) {
 				bw.write(s.getKey() + "," + listData.get(s.getKey()) + "," + s.getValue() + lineS);
 			}
-			bw.close();
 		} catch(IOException e) {
 			System.out.println(e);
 			return false;
@@ -154,10 +149,10 @@ public class SalesTotallingSystem {
 					return;
 				}
 
-				if(!totalSales(branchSalesData, salesFile, readFile, "支店")){
+				if(!totalSales(branchSalesData, salesFile.get(0), salesFile.get(2), readFile)){
 					return;
 				}
-				if(!totalSales(commoditySalesData, salesFile, readFile, "商品")){
+				if(!totalSales(commoditySalesData, salesFile.get(1), salesFile.get(2), readFile)){
 					return;
 				}
 				while(salesFile.size() != 0){
